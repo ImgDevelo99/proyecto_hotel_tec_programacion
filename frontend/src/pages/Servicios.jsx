@@ -131,15 +131,15 @@ const Servicios = () => {
         )}
       </Card>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingId ? 'Modificar Servicio' : 'Nuevo Servicio'}>
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingId ? 'Modificar Servicio' : 'Nuevo Servicio'} size="lg">
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <Input label="Nombre del Servicio" name="NombreServicio" value={formData.NombreServicio} onChange={handleChange} required />
             <Input label="Estado" name="Estado" isSelect options={[ { value: '1', label: 'Disponible' }, { value: '0', label: 'No Disponible' } ]} value={formData.Estado} onChange={handleChange} required />
           </div>
           <Input label="Descripción Corta" name="Descripcion" value={formData.Descripcion} onChange={handleChange} required />
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
              <Input label="Costo ($)" type="number" name="Costo" value={formData.Costo} onChange={handleChange} required />
              <Input label="Duración (Ej. 2h)" name="Duracion" value={formData.Duracion} onChange={handleChange} required />
              <Input label="Límite Pax" type="number" name="CantidadMaximaPersonas" value={formData.CantidadMaximaPersonas} onChange={handleChange} />

@@ -18,6 +18,7 @@ app.get('/', (req, res) => {
 });
 
 // Routes — Existing
+app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/habitaciones', require('./routes/habitacionRoutes'));
 app.use('/api/clientes', require('./routes/clienteRoutes'));
 
@@ -35,6 +36,8 @@ app.use('/api/paquetes', require('./routes/paqueteRoutes'));
 app.use('/api/reservas', require('./routes/reservaRoutes'));
 app.use('/api/detalle-reserva-paquetes', require('./routes/detalleReservaPaqueteRoutes'));
 app.use('/api/detalle-reserva-servicio', require('./routes/detalleReservaServicioRoutes'));
+app.use('/api/analytics', require('./routes/analyticsRoutes'));
+app.use('/api/portal', require('./routes/portalRoutes'));
 
 // Error handling middleware (to be implemented)
 app.use((err, req, res, next) => {

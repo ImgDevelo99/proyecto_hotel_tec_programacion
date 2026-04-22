@@ -9,13 +9,42 @@
   top: 16px;
   gap: 32px;
   z-index: 10;
+  transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  overflow-x: hidden;
+}
+
+.sidebar.collapsed {
+  width: 88px;
 }
 
 .sidebar-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.menu-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-normal);
+}
+
+.menu-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-primary);
+}
+
+.sidebar.collapsed .sidebar-header {
+  flex-direction: column;
   gap: 16px;
-  padding: 0 8px;
 }
 
 .logo-icon {
@@ -39,6 +68,13 @@
   background: linear-gradient(135deg, #fff, #94a3b8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  white-space: nowrap;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .logo-text {
+  opacity: 0;
+  display: none;
 }
 
 .sidebar-nav {
@@ -59,6 +95,16 @@
   transition: var(--transition-normal);
   position: relative;
   overflow: hidden;
+  white-space: nowrap;
+}
+
+.sidebar.collapsed .nav-item {
+  padding: 14px;
+  justify-content: center;
+}
+
+.sidebar.collapsed .nav-text {
+  display: none;
 }
 
 .nav-item::before {
@@ -132,4 +178,14 @@
 .user-role {
   font-size: 0.8rem;
   color: var(--color-text-muted);
+}
+
+.sidebar.collapsed .user-profile {
+  padding: 12px;
+  justify-content: center;
+  background: transparent;
+}
+
+.sidebar.collapsed .user-info {
+  display: none;
 }

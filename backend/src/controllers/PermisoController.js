@@ -33,7 +33,12 @@ const remove = async (req, res, next) => {
     const id = await PermisoService.deletePermiso(req.params.id);
     if (!id) return res.status(404).json({ message: 'Permiso no encontrado' });
     res.json({ id });
-  } catch (error) { next(error); }
+  } catch (error) { 
+    if(error.code === 'ER_ROW_IS_REFERENCED_2') {
+      return res.status(400).json({ message: 'No se puede eliminar: El permiso ya está asociado a un rol.' });
+    }
+    next(error); 
+  }
 };
 
 module.exports = { getAll, getById, create, update, remove };

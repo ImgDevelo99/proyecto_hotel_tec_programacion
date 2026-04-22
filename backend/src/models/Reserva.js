@@ -10,6 +10,21 @@ const getById = async (id) => {
   return rows[0];
 };
 
+const getByUser = async (idUsuario) => {
+  const [rows] = await db.execute(`
+    SELECT 
+      r.*,
+      e.NombreEstadoReserva,
+      m.NomMetodoPago
+    FROM Reserva r
+    LEFT JOIN estadosreserva e ON r.IdEstadoReserva = e.IdEstadoReserva
+    LEFT JOIN metodopago m ON r.MetodoPago = m.IdMetodoPago
+    WHERE r.UsuarioIdusuario = ?
+    ORDER BY r.FechaReserva DESC
+  `, [idUsuario]);
+  return rows;
+};
+
 const create = async (data) => {
   const { NroDocumentoCliente, FechaReserva, FechaInicio, FechaFinalizacion, SubTotal, Descuento, IVA, MontoTotal, MetodoPago, IdEstadoReserva, UsuarioIdusuario } = data;
   const [result] = await db.execute(
@@ -33,4 +48,4 @@ const remove = async (id) => {
   return result.affectedRows > 0 ? id : null;
 };
 
-module.exports = { getAll, getById, create, update, delete: remove };
+module.exports = { getAll, getById, getByUser, create, update, delete: remove };

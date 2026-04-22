@@ -22,6 +22,9 @@ const create = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
+    if (parseInt(req.params.id) === 1) {
+      return res.status(403).json({ message: 'Acción denegada: El rol Super Administrador no puede ser modificado.' });
+    }
     const id = await RolService.updateRol(req.params.id, req.body);
     if (!id) return res.status(404).json({ message: 'Rol no encontrado' });
     res.json({ id, ...req.body });
@@ -30,10 +33,18 @@ const update = async (req, res, next) => {
 
 const remove = async (req, res, next) => {
   try {
+    if (parseInt(req.params.id) === 1) {
+      return res.status(403).json({ message: 'Acción denegada: El rol Super Administrador no puede ser eliminado.' });
+    }
     const id = await RolService.deleteRol(req.params.id);
     if (!id) return res.status(404).json({ message: 'Rol no encontrado' });
     res.json({ id });
-  } catch (error) { next(error); }
+  } catch (error) { 
+    if(error.code === 'ER_ROW_IS_REFERENCED_2') {
+      return res.status(400).json({ message: 'No se puede eliminar: El rol está asignado a uno o más usuarios o permisos.' });
+    }
+    next(error); 
+  }
 };
 
 module.exports = { getAll, getById, create, update, remove };

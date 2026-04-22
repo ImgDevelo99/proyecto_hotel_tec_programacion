@@ -11,10 +11,17 @@ const handleResponse = async (response) => {
 };
 
 const getHeaders = () => {
-  return {
+  const token = localStorage.getItem('hotelsys_token');
+  const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  return headers;
 };
 
 export const api = {

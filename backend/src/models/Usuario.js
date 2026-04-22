@@ -10,10 +10,15 @@ const getById = async (id) => {
   return rows[0];
 };
 
+const getByEmail = async (email) => {
+  const [rows] = await db.execute('SELECT * FROM usuarios WHERE Email = ?', [email]);
+  return rows[0];
+};
+
 const create = async (data) => {
-  const { NombreUsuario, Contrasena, Apellido, Email, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, IDRol } = data;
+  const { NombreUsuario, Contrasena, Apellido, Email, TipoDocumento = null, NumeroDocumento = null, Telefono = null, Pais = null, Direccion = null, IDRol } = data;
   const [result] = await db.execute(
-    'INSERT INTO Usuarios (NombreUsuario, Contrasena, Apellido, Email, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, IDRol) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO usuarios (NombreUsuario, Contrasena, Apellido, Email, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, IDRol) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     [NombreUsuario, Contrasena, Apellido, Email, TipoDocumento, NumeroDocumento, Telefono, Pais, Direccion, IDRol]
   );
   return result.insertId;
@@ -33,4 +38,6 @@ const remove = async (id) => {
   return result.affectedRows > 0 ? id : null;
 };
 
-module.exports = { getAll, getById, create, update, delete: remove };
+module.exports = { getAll, getById, getByEmail, create, update, delete: remove };
+//Correo Electrónico: superadmin@hotelsys.com
+//Contraseña: SuperAdmin2026!

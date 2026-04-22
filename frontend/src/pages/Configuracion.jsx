@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import Card from '../components/Card/Card';
 import DataTable from '../components/DataTable/DataTable';
 import Button from '../components/Button/Button';
-import { PackageOpen, Coffee, ShieldCheck, CreditCard, Activity } from 'lucide-react';
+import Modal from '../components/Modal/Modal';
+import Input from '../components/Input/Input';
+import { PackageOpen, Coffee, ShieldCheck, CreditCard, Activity, Plus } from 'lucide-react';
 import { api } from '../services/api';
 import { useToast } from '../context/ToastContext';
 
@@ -14,6 +16,11 @@ const Configuracion = () => {
   const [estados, setEstados] = useState([]);
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
+
+  // Modals state
+  const [modalType, setModalType] = useState(null); // 'metodo', 'estado'
+  const [editingId, setEditingId] = useState(null);
+  const [formData, setFormData] = useState({ name: '' });
 
   const fetchData = async () => {
     try {
@@ -39,6 +46,39 @@ const Configuracion = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const openModal = (type, item = null) => {
+    setModalType(type);
+    if (item) {
+      setEditingId(item.IdMetodoPago || item.IdEstadoReserva);
+      setFormData({ name: item.NomMetodoPago || item.NombreEstadoReserva });
+    } else {
+      setEditingId(null);
+      setFormData({ name: '' });
+    }
+  };
+
+  const closeModal = () => setModalType(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (modalType === 'metodo') {
+        const payload = { NomMetodoPago: formData.name };
+        if (editingId) await api.put(`/metodos-pago/${editingId}`, payload);
+        else await api.post('/metodos-pago', payload);
+      } else if (modalType === 'estado') {
+        const payload = { NombreEstadoReserva: formData.name };
+        if (editingId) await api.put(`/estados-reserva/${editingId}`, payload);
+        else await api.post('/estados-reserva', payload);
+      }
+      showToast(`${modalType === 'metodo' ? 'Método' : 'Estado'} guardado exitosamente`);
+      closeModal();
+      fetchData();
+    } catch (error) {
+      showToast(error.message, 'error');
+    }
+  };
 
   const paqColumns = [
     { label: 'Paquete', key: 'NombrePaquete' },
@@ -77,10 +117,10 @@ const Configuracion = () => {
             <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.2rem', margin: 0 }}>
               <PackageOpen color="var(--color-primary)" /> Paquetes
             </h3>
-            <Button size="sm">Añadir</Button>
+            {/* Managed in Paquetes page */}
           </div>
           <Card noPadding>
-            {loading ? <div style={{ padding: '24px' }}>Cargando...</div> : <DataTable columns={paqColumns} data={paquetes} />}
+            {loading ? <div style={{ padding: '24px' }}>Cargando...</div> : <DataTable columns={paqColumns} data={paquetes.slice(0, 4)} />}
           </Card>
         </div>
 
@@ -89,42 +129,68 @@ const Configuracion = () => {
             <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.2rem', margin: 0 }}>
               <Coffee color="var(--color-secondary)" /> Servicios
             </h3>
-            <Button size="sm" variant="secondary">Añadir</Button>
+            {/* Managed in Servicios page */}
           </div>
           <Card noPadding>
-            {loading ? <div style={{ padding: '24px' }}>Cargando...</div> : <DataTable columns={servColumns} data={servicios} />}
+            {loading ? <div style={{ padding: '24px' }}>Cargando...</div> : <DataTable columns={servColumns} data={servicios.slice(0, 4)} />}
           </Card>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
         <div>
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', marginBottom: '16px' }}>
-            <ShieldCheck size={20} color="var(--color-accent)" /> Roles del Sistema
-          </h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', margin: 0 }}>
+              <ShieldCheck size={20} color="var(--color-accent)" /> Roles del Sistema
+            </h3>
+          </div>
           <Card noPadding>
             {loading ? <div style={{ padding: '24px' }}>Cargando...</div> : <DataTable columns={rolColumns} data={roles} />}
           </Card>
         </div>
         
         <div>
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', marginBottom: '16px' }}>
-            <CreditCard size={20} color="var(--color-warning)" /> Métodos de Pago
-          </h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', margin: 0 }}>
+              <CreditCard size={20} color="var(--color-warning)" /> Métodos de Pago
+            </h3>
+            <Button size="sm" icon={<Plus size={14}/>} onClick={() => openModal('metodo')}>Añadir</Button>
+          </div>
           <Card noPadding>
-            {loading ? <div style={{ padding: '24px' }}>Cargando...</div> : <DataTable columns={metColumns} data={metodos} />}
+            {loading ? <div style={{ padding: '24px' }}>Cargando...</div> : <DataTable columns={metColumns} data={metodos} onEdit={(r) => openModal('metodo', r)} />}
           </Card>
         </div>
 
         <div>
-           <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', marginBottom: '16px' }}>
-            <Activity size={20} color="var(--color-danger)" /> Estados de Reserva
-          </h3>
+           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', margin: 0 }}>
+              <Activity size={20} color="var(--color-danger)" /> Estados de Reserva
+            </h3>
+            <Button size="sm" icon={<Plus size={14}/>} onClick={() => openModal('estado')}>Añadir</Button>
+          </div>
           <Card noPadding>
-            {loading ? <div style={{ padding: '24px' }}>Cargando...</div> : <DataTable columns={extColumns} data={estados} />}
+            {loading ? <div style={{ padding: '24px' }}>Cargando...</div> : <DataTable columns={extColumns} data={estados} onEdit={(r) => openModal('estado', r)} />}
           </Card>
         </div>
       </div>
+
+      {modalType && (
+        <Modal isOpen={!!modalType} onClose={closeModal} title={editingId ? `Editar ${modalType === 'metodo' ? 'Método' : 'Estado'}` : `Nuevo ${modalType === 'metodo' ? 'Método de Pago' : 'Estado de Reserva'}`}>
+          <form onSubmit={handleSubmit}>
+            <Input 
+              label="Nombre" 
+              name="name" 
+              value={formData.name} 
+              onChange={(e) => setFormData({ name: e.target.value })} 
+              required 
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
+              <Button variant="secondary" onClick={closeModal}>Cancelar</Button>
+              <Button type="submit">Guardar</Button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 };

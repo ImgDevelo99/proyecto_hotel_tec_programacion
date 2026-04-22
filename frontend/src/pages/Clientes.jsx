@@ -22,6 +22,7 @@ const Clientes = () => {
     Email: '',
     Telefono: '',
     Direccion: '',
+    Estado: '1',
   });
 
   const fetchData = async () => {
@@ -49,10 +50,11 @@ const Clientes = () => {
         Email: client.Email,
         Telefono: client.Telefono,
         Direccion: client.Direccion,
+        Estado: client.Estado !== undefined ? (client.Estado ? '1' : '0') : '1',
       });
     } else {
       setEditingId(null);
-      setFormData({ NroDocumento: '', Nombre: '', Apellido: '', Email: '', Telefono: '', Direccion: '' });
+      setFormData({ NroDocumento: '', Nombre: '', Apellido: '', Email: '', Telefono: '', Direccion: '', Estado: '1' });
     }
     setIsModalOpen(true);
   };
@@ -66,11 +68,11 @@ const Clientes = () => {
       // Aquí el toggle de estado será asincrónico en la tabla, no en el form.
       if (editingId) {
         const clientTarget = clientes.find(c => c.NroDocumento === editingId);
-        const actualId = clientTarget.IDCliente || editingId;
-        await api.put(`/clientes/${actualId}`, formData); // Nota: el backend maneja actualización parcial
+        const actualId = clientTarget.NroDocumento; // The PK is strictly NroDocumento
+        await api.put(`/clientes/${actualId}`, { ...formData, Estado: formData.Estado === '1' }); // Nota: el backend maneja actualización parcial
         showToast('Cliente actualizado');
       } else {
-        await api.post('/clientes', { ...formData, Estado: 1 });
+        await api.post('/clientes', { ...formData, Estado: formData.Estado === '1' ? 1 : 0 });
         showToast('Cliente registrado');
       }
       setIsModalOpen(false);
@@ -82,7 +84,7 @@ const Clientes = () => {
 
   const toggleStatus = async (client) => {
     const newState = !client.Estado;
-    const actualId = client.IDCliente || client.NroDocumento;
+    const actualId = client.NroDocumento; // Strictly NroDocumento
     try {
       await api.put(`/clientes/${actualId}`, {
         Nombre: client.Nombre,
@@ -170,7 +172,10 @@ const Clientes = () => {
             <Input label="Nombre" name="Nombre" value={formData.Nombre} onChange={handleChange} required />
             <Input label="Apellido" name="Apellido" value={formData.Apellido} onChange={handleChange} required />
           </div>
-          <Input label="Nro Documento" name="NroDocumento" value={formData.NroDocumento} onChange={handleChange} required disabled={!!editingId} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <Input label="Nro Documento" name="NroDocumento" value={formData.NroDocumento} onChange={handleChange} required disabled={!!editingId} />
+            <Input label="Estado" name="Estado" isSelect options={[ { value: '1', label: 'Activo' }, { value: '0', label: 'Inactivo' } ]} value={formData.Estado} onChange={handleChange} required />
+          </div>
           <Input label="Email" type="email" name="Email" value={formData.Email} onChange={handleChange} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <Input label="Teléfono" name="Telefono" value={formData.Telefono} onChange={handleChange} />

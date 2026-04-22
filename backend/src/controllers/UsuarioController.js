@@ -22,6 +22,10 @@ const create = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
+    const user = await UsuarioService.getUsuario(req.params.id);
+    if (user && user.IDRol === 1) {
+      return res.status(403).json({ message: 'Acción denegada: El Super Administrador no puede ser modificado por este medio.' });
+    }
     const id = await UsuarioService.updateUsuario(req.params.id, req.body);
     if (!id) return res.status(404).json({ message: 'Usuario no encontrado' });
     res.json({ id, ...req.body });
@@ -30,6 +34,10 @@ const update = async (req, res, next) => {
 
 const remove = async (req, res, next) => {
   try {
+    const user = await UsuarioService.getUsuario(req.params.id);
+    if (user && user.IDRol === 1) {
+      return res.status(403).json({ message: 'Acción denegada: El Super Administrador no puede ser eliminado.' });
+    }
     const id = await UsuarioService.deleteUsuario(req.params.id);
     if (!id) return res.status(404).json({ message: 'Usuario no encontrado' });
     res.json({ id });

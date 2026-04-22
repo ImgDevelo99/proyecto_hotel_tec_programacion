@@ -1,24 +1,24 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.75); /* Darker backdrop to hide background text */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 99999; /* Ensure it stays above any TopBar */
   padding: 24px;
 }
 
 .modal-container {
-  background: var(--color-bg-base);
+  background: var(--color-bg-base); /* Solid background to prevent text clash */
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   max-height: 90vh;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
   overflow: hidden;
 }
 
@@ -52,6 +52,9 @@
   justify-content: center;
   border-radius: var(--radius-md);
   transition: var(--transition-normal);
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
 
 .modal-close-btn:hover {

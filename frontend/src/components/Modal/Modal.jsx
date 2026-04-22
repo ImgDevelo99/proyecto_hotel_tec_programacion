@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import './Modal.css';
 
@@ -14,10 +15,10 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className="modal-overlay animate-fade-in" onClick={onClose}>
       <div 
-        className={`modal-container glass-panel modal-${size} animate-slide-up`} 
+        className={`modal-container modal-${size} animate-slide-up`} 
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
@@ -30,7 +31,8 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
