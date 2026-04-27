@@ -38,6 +38,7 @@ app.use('/api/detalle-reserva-paquetes', require('./routes/detalleReservaPaquete
 app.use('/api/detalle-reserva-servicio', require('./routes/detalleReservaServicioRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
 app.use('/api/portal', require('./routes/portalRoutes'));
+app.use('/api/public', require('./routes/publicRoutes'));
 
 // Error handling middleware (to be implemented)
 app.use((err, req, res, next) => {

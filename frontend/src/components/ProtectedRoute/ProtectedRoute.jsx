@@ -29,9 +29,11 @@ const ProtectedRoute = () => {
 
   // RBAC Access Control para otros roles
   if (user?.role !== 1 && user?.permissions && !user.permissions.includes('ALL')) {
-    const isAllowed = user.permissions.includes(location.pathname) || location.pathname === '/';
+    // The admin root is now /admin, so we strip that to check permissions or allow exactly /admin
+    const modulePath = location.pathname.replace('/admin', '') || '/';
+    const isAllowed = user.permissions.includes(modulePath) || location.pathname === '/admin';
     if (!isAllowed) {
-      return <Navigate to="/" replace />;
+      return <Navigate to="/admin" replace />;
     }
   }
 

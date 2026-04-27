@@ -4,11 +4,12 @@ import { useAuth } from '../context/AuthContext';
 import './AuthLayout.css'; // Optional styling for the auth background
 
 const AuthLayout = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
-  // Si ya está logueado, mandarlo directo al dashboard
+  // Si ya está logueado, mandarlo a su portal respectivo
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    const role = user?.role ?? user?.IDRol;
+    return <Navigate to={role === 2 ? '/mi-portal' : '/admin'} replace />;
   }
 
   return (

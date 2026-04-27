@@ -21,7 +21,7 @@ const Login = () => {
       const data = await login(formData.email, formData.password);
       // Redirigir según el rol: Clientes van a su portal, admins/personal al dashboard
       const role = data?.user?.role ?? data?.user?.IDRol;
-      navigate(role === 2 ? '/mi-portal' : '/');
+      navigate(role === 2 ? '/mi-portal' : '/admin');
     } catch (err) {
       setError(err.message);
     } finally {

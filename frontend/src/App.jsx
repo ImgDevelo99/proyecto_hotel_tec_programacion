@@ -23,6 +23,7 @@ import Paquetes from './pages/Paquetes';
 import Configuracion from './pages/Configuracion';
 import RolesPermisos from './pages/RolesPermisos';
 import ClientePortal from './pages/ClientePortal';
+import LandingPage from './pages/LandingPage';
 
 function App() {
   return (
@@ -37,13 +38,16 @@ function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
           </Route>
 
+          {/* Public Landing Page */}
+          <Route path="/" element={<LandingPage />} />
+
           {/* Protected Area */}
           <Route element={<ProtectedRoute />}>
             {/* Client Portal (separate layout) */}
             <Route path="/mi-portal" element={<ClientePortal />} />
 
             {/* Admin Area */}
-            <Route path="/" element={<MainLayout />}>
+            <Route path="/admin" element={<MainLayout />}>
               <Route index element={<Dashboard />} />
               <Route path="habitaciones" element={<Habitaciones />} />
               <Route path="reservas" element={<Reservas />} />

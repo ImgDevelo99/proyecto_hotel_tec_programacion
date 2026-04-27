@@ -39,16 +39,19 @@ const Sidebar = () => {
       </div>
 
       <nav className="sidebar-nav">
-        {filteredNavItems.map((item, index) => (
+        {filteredNavItems.map((item, index) => {
+          const targetPath = `/admin${item.path === '/' ? '' : item.path}`;
+          return (
           <NavLink
             key={item.path}
-            to={item.path}
+            to={targetPath}
             className={({ isActive }) => `nav-item animate-fade-in animate-delay-${(index + 1) * 100} ${isActive ? 'active' : ''}`}
           >
             <span className="nav-icon">{item.icon}</span>
             <span className="nav-text">{item.label}</span>
           </NavLink>
-        ))}
+          );
+        })}
       </nav>
 
       <div className="sidebar-footer">
