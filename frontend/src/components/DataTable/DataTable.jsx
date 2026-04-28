@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Edit2, Trash2, Lock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit2, Trash2, Lock, Eye } from 'lucide-react';
 import './DataTable.css';
 
-const DataTable = ({ columns, data, onEdit, onDelete, itemsPerPage = 5, hideActions = () => false }) => {
+const DataTable = ({ columns, data, onView, onEdit, onDelete, itemsPerPage = 5, hideActions = () => false }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   // Reset to first page when data changes (e.g. on search or filter)
@@ -62,12 +62,17 @@ const DataTable = ({ columns, data, onEdit, onDelete, itemsPerPage = 5, hideActi
                     {col.render ? col.render(row[col.key], row) : row[col.key]}
                   </td>
                 ))}
-                {(onEdit || onDelete) && (
+                {(onView || onEdit || onDelete) && (
                   <td className="actions-cell">
                     {hideActions(row) ? (
                       <span title="Elemento de Sistema Protegido" style={{ color: 'var(--color-text-muted)', display: 'flex', justifyContent: 'center' }}><Lock size={16} /></span>
                     ) : (
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-start' }}>
+                        {onView && (
+                          <button className="icon-btn view-btn" onClick={() => onView(row)} title="Ver detalle" style={{ background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: 'none', padding: '6px', borderRadius: '8px', cursor: 'pointer', transition: 'var(--transition-fast)' }}>
+                            <Eye size={16} />
+                          </button>
+                        )}
                         {onEdit && (
                           <button className="icon-btn edit-btn" onClick={() => onEdit(row)} title="Editar" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#60a5fa', border: 'none', padding: '6px', borderRadius: '8px', cursor: 'pointer', transition: 'var(--transition-fast)' }}>
                             <Edit2 size={16} />

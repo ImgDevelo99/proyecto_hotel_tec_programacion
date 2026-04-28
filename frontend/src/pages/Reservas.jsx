@@ -4,7 +4,7 @@ import DataTable from '../components/DataTable/DataTable';
 import Button from '../components/Button/Button';
 import Modal from '../components/Modal/Modal';
 import Input from '../components/Input/Input';
-import { Plus, Trash2, CalendarCheck, Package, Coffee } from 'lucide-react';
+import { Plus, CalendarCheck, Trash2, Eye, Edit2, Package, Coffee } from 'lucide-react';
 import { api } from '../services/api';
 import { useToast } from '../context/ToastContext';
 
@@ -22,9 +22,13 @@ const Reservas = () => {
 
   // Modal and Form State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isEditingFull, setIsEditingFull] = useState(false);
   const [selectedReservaToUpdate, setSelectedReservaToUpdate] = useState(null);
-  const [newStatus, setNewStatus] = useState('');
+
+  // Detail View
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [detailData, setDetailData] = useState({ reserva: null, paquetes: [], servicios: [] });
+  const [detailLoading, setDetailLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     NroDocumentoCliente: '',
@@ -88,6 +92,8 @@ const Reservas = () => {
 
   const openModal = () => {
     resetForm();
+    setIsEditingFull(false);
+    setSelectedReservaToUpdate(null);
     setIsModalOpen(true);
   };
 
@@ -152,18 +158,24 @@ const Reservas = () => {
       const subTotal = calculateTotal();
       const payload = { 
         ...formData, 
-        FechaReserva: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        FechaReserva: formData.FechaReserva || new Date().toISOString().slice(0, 19).replace('T', ' '),
         SubTotal: subTotal,
         Descuento: 0,
         IVA: 0,
-        MontoTotal: subTotal, // Lógica extendible para IVA/Descuento
-        UsuarioIdusuario: 1, // Fix temporal - Idealmente viene del User session
+        MontoTotal: subTotal,
+        UsuarioIdusuario: 1, 
         detallesPaquetes: cartPaquetes,
         detallesServicios: cartServicios
       };
       
-      await api.post('/reservas', payload);
-      showToast('Reserva generada exitosamente, maestro y detalle sincronizados');
+      if (isEditingFull && selectedReservaToUpdate) {
+        const rId = selectedReservaToUpdate.IdReserva || selectedReservaToUpdate.IDReserva || selectedReservaToUpdate.id;
+        await api.put(`/reservas/${rId}`, payload);
+        showToast('Reserva actualizada exitosamente', 'success');
+      } else {
+        await api.post('/reservas', payload);
+        showToast('Reserva generada exitosamente, maestro y detalle sincronizados', 'success');
+      }
       setIsModalOpen(false);
       fetchTodos();
     } catch (error) {
@@ -183,29 +195,63 @@ const Reservas = () => {
     }
   };
 
-  const handleEdit = (row) => {
-    setSelectedReservaToUpdate(row);
-    setNewStatus(row.IdEstadoReserva || '');
-    setIsStatusModalOpen(true);
+  const handleViewDetail = async (row) => {
+    setDetailLoading(true);
+    setDetailData({ reserva: row, paquetes: [], servicios: [] });
+    setIsDetailModalOpen(true);
+    try {
+      const rId = row.IdReserva || row.IDReserva || row.id;
+      const [paqData, srvData] = await Promise.all([
+        api.get(`/reservas/${rId}/paquetes`),
+        api.get(`/reservas/${rId}/servicios`)
+      ]);
+      setDetailData({ reserva: row, paquetes: Array.isArray(paqData) ? paqData : [], servicios: Array.isArray(srvData) ? srvData : [] });
+    } catch {
+      showToast('Error cargando detalles', 'error');
+    } finally {
+      setDetailLoading(false);
+    }
   };
 
-  const handleUpdateStatus = async (e) => {
-    e.preventDefault();
-    if (!selectedReservaToUpdate || !newStatus) return;
+  const handleEdit = async (row) => {
+    setSelectedReservaToUpdate(row);
+    setIsEditingFull(true);
+    
+    // Set basic data
+    setFormData({
+      NroDocumentoCliente: row.NroDocumentoCliente,
+      FechaInicio: row.FechaInicio ? row.FechaInicio.slice(0, 10) : '',
+      FechaFinalizacion: row.FechaFinalizacion ? row.FechaFinalizacion.slice(0, 10) : '',
+      IdEstadoReserva: row.IdEstadoReserva,
+      MetodoPago: row.MetodoPago,
+      FechaReserva: row.FechaReserva
+    });
+
     try {
-      // The update endpoint in ReservaController expects the full object or parts of it
-      // Since it's a PUT /:id we can pass the existing row data but with the new state
-      const payload = {
-        ...selectedReservaToUpdate,
-        IdEstadoReserva: newStatus
-      };
-      const rId = selectedReservaToUpdate.IdReserva || selectedReservaToUpdate.IDReserva || selectedReservaToUpdate.id;
-      await api.put(`/reservas/${rId}`, payload);
-      showToast('Estado de reserva actualizado correctamente', 'success');
-      setIsStatusModalOpen(false);
-      fetchTodos();
+      const rId = row.IdReserva || row.IDReserva || row.id;
+      // Fetch details
+      const [paqData, srvData] = await Promise.all([
+        api.get(`/reservas/${rId}/paquetes`),
+        api.get(`/reservas/${rId}/servicios`)
+      ]);
+
+      setCartPaquetes(paqData.map(p => ({
+        idpaquete: p.IDPaquete,
+        nombre: p.NombrePaquete,
+        precio: parseFloat(p.Precio),
+        cantidad: p.Cantidad
+      })));
+
+      setCartServicios(srvData.map(s => ({
+        idservicio: s.IDServicio,
+        nombre: s.NombreServicio,
+        precio: parseFloat(s.Precio),
+        cantidad: s.Cantidad
+      })));
+
+      setIsModalOpen(true);
     } catch (error) {
-      showToast(error.message || 'Error actualizando estado', 'error');
+      showToast('Error cargando detalles de la reserva', 'error');
     }
   };
 
@@ -238,35 +284,67 @@ const Reservas = () => {
           <DataTable 
             columns={columns} 
             data={reservas} 
+            onView={handleViewDetail}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
         )}
       </Card>
 
-      {/* Modal para actualizar estado de la reserva */}
-      <Modal isOpen={isStatusModalOpen} onClose={() => setIsStatusModalOpen(false)} title="Actualizar Estado de Reserva">
-        <form onSubmit={handleUpdateStatus} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-            Selecciona el nuevo estado para la reserva <strong>RSV-{selectedReservaToUpdate?.IdReserva || selectedReservaToUpdate?.IDReserva}</strong>.
-          </p>
-          <Input 
-            label="Nuevo Estado" 
-            name="newStatus" 
-            isSelect 
-            options={estados.map(e => ({ value: e.IdEstadoReserva, label: e.NombreEstadoReserva }))} 
-            value={newStatus} 
-            onChange={(e) => setNewStatus(e.target.value)} 
-            required 
-          />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
-            <Button variant="secondary" type="button" onClick={() => setIsStatusModalOpen(false)}>Cancelar</Button>
-            <Button variant="primary" type="submit">Actualizar Estado</Button>
+      {/* ── DETAIL VIEW MODAL ── */}
+      <Modal isOpen={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)} title={`Detalle Reserva RSV-${detailData.reserva?.IdReserva || ''}`} size="lg">
+        {detailLoading ? (
+          <div style={{ padding: '32px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Cargando detalles...</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {/* Header Info */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              {[['# Reserva', `RSV-${detailData.reserva?.IdReserva}`], ['Cliente', detailData.reserva?.NroDocumentoCliente], ['Fecha Ingreso', detailData.reserva?.FechaInicio ? new Date(detailData.reserva.FechaInicio).toLocaleDateString() : 'N/A'], ['Fecha Salida', detailData.reserva?.FechaFinalizacion ? new Date(detailData.reserva.FechaFinalizacion).toLocaleDateString() : 'N/A'], ['Método de Pago', detailData.reserva?.NomMetodoPago || 'N/A'], ['Estado', detailData.reserva?.NombreEstadoReserva || 'Pendiente']].map(([label, val]) => (
+                <div key={label} style={{ background: 'rgba(0,0,0,0.2)', padding: '12px 16px', borderRadius: '10px' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+                  <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>{val}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Paquetes */}
+            <div>
+              <h4 style={{ marginBottom: '10px', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)' }}>Paquetes Contratados</h4>
+              {detailData.paquetes.length === 0 ? <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Sin paquetes</p> : detailData.paquetes.map((p, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'rgba(59,130,246,0.07)', borderLeft: '3px solid var(--color-primary)', borderRadius: '6px', marginBottom: '8px' }}>
+                  <span style={{ fontWeight: 600 }}>{p.NombrePaquete}</span>
+                  <span>x{p.Cantidad} — <strong style={{ color: 'var(--color-primary)' }}>${parseFloat(p.Precio || 0).toLocaleString()}</strong></span>
+                </div>
+              ))}
+            </div>
+
+            {/* Servicios */}
+            <div>
+              <h4 style={{ marginBottom: '10px', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)' }}>Servicios Contratados</h4>
+              {detailData.servicios.length === 0 ? <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Sin servicios adicionales</p> : detailData.servicios.map((s, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'rgba(139,92,246,0.07)', borderLeft: '3px solid var(--color-secondary)', borderRadius: '6px', marginBottom: '8px' }}>
+                  <span style={{ fontWeight: 600 }}>{s.NombreServicio}</span>
+                  <span>x{s.Cantidad} — <strong style={{ color: 'var(--color-secondary)' }}>${parseFloat(s.Precio || 0).toLocaleString()}</strong></span>
+                </div>
+              ))}
+            </div>
+
+            {/* Total */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'rgba(0,0,0,0.3)', borderRadius: '12px', borderTop: '2px solid rgba(255,255,255,0.05)' }}>
+              <span style={{ color: 'var(--color-text-muted)', fontWeight: 500 }}>Total de la Reserva</span>
+              <span style={{ fontSize: '1.6rem', fontWeight: 800, color: 'white' }}>${parseFloat(detailData.reserva?.MontoTotal || 0).toLocaleString()}</span>
+            </div>
+
+            {/* Action Button */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <Button variant="secondary" onClick={() => setIsDetailModalOpen(false)}>Cerrar</Button>
+              <Button onClick={() => { setIsDetailModalOpen(false); handleEdit(detailData.reserva); }} icon={<Edit2 size={16}/>}>Editar Reserva</Button>
+            </div>
           </div>
-        </form>
+        )}
       </Modal>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Generador Profesional de Reserva" size="xl">
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={isEditingFull ? "Editar Reserva" : "Generador Profesional de Reserva"} size="xl">
         <form onSubmit={handleSubmit}>
           
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px' }}>
@@ -382,20 +460,23 @@ const Reservas = () => {
                 ))}
               </div>
 
-              {/* Total Row */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', background: 'var(--color-bg-panel)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)' }}>
-                <span style={{ fontSize: '1.2rem', fontWeight: 500, color: 'var(--color-text-muted)' }}>Monto Total Liquidación:</span>
-                <span style={{ fontSize: '1.8rem', fontWeight: 800, color: 'white', textShadow: '0 2px 10px rgba(59, 130, 246, 0.5)' }}>
-                  ${calculateTotal().toLocaleString()}
-                </span>
+              {/* Summary and Submit */}
+              <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Total Calculado:</span>
+                  <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>
+                    ${calculateTotal().toLocaleString()}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <Button variant="secondary" onClick={() => setIsModalOpen(false)} style={{ flex: 1 }}>Cancelar</Button>
+                  <Button variant="primary" type="submit" style={{ flex: 2 }} icon={<CalendarCheck size={18} />}>
+                    {isEditingFull ? "Guardar Cambios" : "Confirmar Reserva"}
+                  </Button>
+                </div>
               </div>
 
             </div>
-          </div>
-          
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '32px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '24px' }}>
-            <Button variant="secondary" type="button" onClick={() => setIsModalOpen(false)}>Cancelar Agendamiento</Button>
-            <Button type="submit">Generar Factura y Confirmar</Button>
           </div>
         </form>
       </Modal>

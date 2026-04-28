@@ -13,6 +13,20 @@ const getById = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+const getPaquetes = async (req, res, next) => {
+  try {
+    const Reserva = require('../models/Reserva');
+    res.json(await Reserva.getPaquetesByReserva(req.params.id));
+  } catch (error) { next(error); }
+};
+
+const getServicios = async (req, res, next) => {
+  try {
+    const Reserva = require('../models/Reserva');
+    res.json(await Reserva.getServiciosByReserva(req.params.id));
+  } catch (error) { next(error); }
+};
+
 const create = async (req, res, next) => {
   try {
     const id = await ReservaService.addReserva(req.body);
@@ -36,4 +50,4 @@ const remove = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-module.exports = { getAll, getById, create, update, remove };
+module.exports = { getAll, getById, getPaquetes, getServicios, create, update, remove };

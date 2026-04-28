@@ -1,7 +1,13 @@
 const db = require('../config/db');
 
 const getAll = async () => {
-  const [rows] = await db.execute('SELECT * FROM Reserva');
+  const [rows] = await db.execute(`
+    SELECT r.*, e.NombreEstadoReserva, m.NomMetodoPago
+    FROM reserva r
+    LEFT JOIN estadosreserva e ON r.IdEstadoReserva = e.IdEstadoReserva
+    LEFT JOIN metodopago m ON r.MetodoPago = m.IdMetodoPago
+    ORDER BY r.FechaReserva DESC
+  `);
   return rows;
 };
 
@@ -22,6 +28,26 @@ const getByUser = async (idUsuario) => {
     WHERE r.UsuarioIdusuario = ?
     ORDER BY r.FechaReserva DESC
   `, [idUsuario]);
+  return rows;
+};
+
+const getPaquetesByReserva = async (idReserva) => {
+  const [rows] = await db.execute(`
+    SELECT dp.*, p.NombrePaquete, p.Precio as PrecioUnitario
+    FROM detallereservapaquetes dp
+    JOIN paquetes p ON dp.IDPaquete = p.IDPaquete
+    WHERE dp.IDReserva = ?
+  `, [idReserva]);
+  return rows;
+};
+
+const getServiciosByReserva = async (idReserva) => {
+  const [rows] = await db.execute(`
+    SELECT ds.*, s.NombreServicio, s.Costo as PrecioUnitario
+    FROM detallereservaservicio ds
+    JOIN servicios s ON ds.IDServicio = s.IDServicio
+    WHERE ds.IDReserva = ?
+  `, [idReserva]);
   return rows;
 };
 
@@ -48,4 +74,4 @@ const remove = async (id) => {
   return result.affectedRows > 0 ? id : null;
 };
 
-module.exports = { getAll, getById, getByUser, create, update, delete: remove };
+module.exports = { getAll, getById, getByUser, getPaquetesByReserva, getServiciosByReserva, create, update, delete: remove };
