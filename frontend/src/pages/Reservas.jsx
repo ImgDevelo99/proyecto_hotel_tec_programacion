@@ -22,6 +22,10 @@ const Reservas = () => {
 
   // Modal and Form State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [selectedReservaToUpdate, setSelectedReservaToUpdate] = useState(null);
+  const [newStatus, setNewStatus] = useState('');
+
   const [formData, setFormData] = useState({
     NroDocumentoCliente: '',
     FechaInicio: '',
@@ -179,12 +183,45 @@ const Reservas = () => {
     }
   };
 
+  const handleEdit = (row) => {
+    setSelectedReservaToUpdate(row);
+    setNewStatus(row.IdEstadoReserva || '');
+    setIsStatusModalOpen(true);
+  };
+
+  const handleUpdateStatus = async (e) => {
+    e.preventDefault();
+    if (!selectedReservaToUpdate || !newStatus) return;
+    try {
+      // The update endpoint in ReservaController expects the full object or parts of it
+      // Since it's a PUT /:id we can pass the existing row data but with the new state
+      const payload = {
+        ...selectedReservaToUpdate,
+        IdEstadoReserva: newStatus
+      };
+      const rId = selectedReservaToUpdate.IdReserva || selectedReservaToUpdate.IDReserva || selectedReservaToUpdate.id;
+      await api.put(`/reservas/${rId}`, payload);
+      showToast('Estado de reserva actualizado correctamente', 'success');
+      setIsStatusModalOpen(false);
+      fetchTodos();
+    } catch (error) {
+      showToast(error.message || 'Error actualizando estado', 'error');
+    }
+  };
+
   const columns = [
     { label: '# Reserva', key: 'IdReserva', render: (val, row) => `RSV-${val || row.IDReserva || row.id}` },
     { label: 'Cliente', key: 'NroDocumentoCliente' },
     { label: 'Ingreso', key: 'FechaInicio', render: (val) => val ? new Date(val).toLocaleDateString() : 'N/A' },
     { label: 'Salida', key: 'FechaFinalizacion', render: (val) => val ? new Date(val).toLocaleDateString() : 'N/A' },
     { label: 'Total', key: 'MontoTotal', render: (val) => <strong style={{color: 'var(--color-primary)'}}>${parseFloat(val || 0).toLocaleString()}</strong> },
+    { label: 'Estado', key: 'NombreEstadoReserva', render: (val) => {
+        let color = 'var(--color-text-muted)';
+        if (val === 'Completada' || val === 'Finalizada') color = 'var(--color-success)';
+        if (val === 'Pendiente') color = 'var(--color-warning)';
+        if (val === 'Rechazada' || val === 'Anulada') color = 'var(--color-danger)';
+        return <span style={{ color, fontWeight: 'bold' }}>{val || 'Pendiente'}</span>;
+    }},
   ];
 
   return (
@@ -201,10 +238,33 @@ const Reservas = () => {
           <DataTable 
             columns={columns} 
             data={reservas} 
+            onEdit={handleEdit}
             onDelete={handleDelete}
           />
         )}
       </Card>
+
+      {/* Modal para actualizar estado de la reserva */}
+      <Modal isOpen={isStatusModalOpen} onClose={() => setIsStatusModalOpen(false)} title="Actualizar Estado de Reserva">
+        <form onSubmit={handleUpdateStatus} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
+            Selecciona el nuevo estado para la reserva <strong>RSV-{selectedReservaToUpdate?.IdReserva || selectedReservaToUpdate?.IDReserva}</strong>.
+          </p>
+          <Input 
+            label="Nuevo Estado" 
+            name="newStatus" 
+            isSelect 
+            options={estados.map(e => ({ value: e.IdEstadoReserva, label: e.NombreEstadoReserva }))} 
+            value={newStatus} 
+            onChange={(e) => setNewStatus(e.target.value)} 
+            required 
+          />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
+            <Button variant="secondary" type="button" onClick={() => setIsStatusModalOpen(false)}>Cancelar</Button>
+            <Button variant="primary" type="submit">Actualizar Estado</Button>
+          </div>
+        </form>
+      </Modal>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Generador Profesional de Reserva" size="xl">
         <form onSubmit={handleSubmit}>

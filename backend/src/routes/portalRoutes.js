@@ -189,6 +189,13 @@ router.post('/reservar', verifyToken, async (req, res, next) => {
       );
     }
 
+    // 9. Crear notificación para el Administrador (IDRolDestino = 1)
+    const msj = `Nueva reserva pendiente del cliente ${NroDocumentoCliente} para la fecha ${FechaInicio}.`;
+    await conn.execute(
+      'INSERT INTO notificaciones (Mensaje, IDRolDestino, IDReservaAsociada) VALUES (?, ?, ?)',
+      [msj, 1, idReserva]
+    );
+
     await conn.commit();
 
     res.status(201).json({
