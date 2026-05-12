@@ -17,11 +17,11 @@
 
 .data-table th {
   color: var(--color-text-muted);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--color-bg-light);
 }
 
 .data-table tbody tr {
@@ -29,7 +29,7 @@
 }
 
 .data-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .data-table td {
@@ -57,7 +57,7 @@
 }
 
 .edit-btn {
-  background: rgba(59, 130, 246, 0.1);
+  background: var(--color-primary-dim);
   color: var(--color-primary);
 }
 
@@ -87,7 +87,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--color-bg-light);
   border-top: 1px solid var(--color-border);
   border-bottom-left-radius: inherit;
   border-bottom-right-radius: inherit;

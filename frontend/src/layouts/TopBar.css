@@ -43,8 +43,8 @@
 }
 
 .search-bar:focus-within {
-  border-color: rgba(59, 130, 246, 0.4);
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  border-color: rgba(5, 150, 105, 0.4);
+  box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
 }
 
 .search-icon {

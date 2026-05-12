@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, BedDouble, CalendarCheck, Users, Coffee, PackageOpen, Settings, Menu, LogOut, ShieldCheck } from 'lucide-react';
+import { Home, BedDouble, CalendarCheck, Users, Coffee, PackageOpen, Settings, Menu, LogOut, ShieldCheck, UserPlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './Sidebar.css';
 
@@ -13,6 +13,7 @@ const Sidebar = () => {
     { icon: <BedDouble size={20} />, label: 'Habitaciones', path: '/habitaciones' },
     { icon: <CalendarCheck size={20} />, label: 'Reservas', path: '/reservas' },
     { icon: <Users size={20} />, label: 'Clientes', path: '/clientes' },
+    { icon: <UserPlus size={20} />, label: 'Usuarios', path: '/usuarios' },
     { icon: <Coffee size={20} />, label: 'Servicios', path: '/servicios' },
     { icon: <PackageOpen size={20} />, label: 'Paquetes', path: '/paquetes' },
     { icon: <ShieldCheck size={20} />, label: 'Roles y Permisos', path: '/roles-permisos' },

@@ -13,12 +13,12 @@
 
 .modal-container {
   background: var(--color-bg-base); /* Solid background to prevent text clash */
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   max-height: 90vh;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
   overflow: hidden;
 }
 
@@ -33,7 +33,7 @@
   align-items: center;
   padding: 20px 24px;
   border-bottom: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--color-bg-light);
 }
 
 .modal-title {

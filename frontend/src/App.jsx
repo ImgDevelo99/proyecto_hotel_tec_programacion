@@ -22,6 +22,7 @@ import Servicios from './pages/Servicios';
 import Paquetes from './pages/Paquetes';
 import Configuracion from './pages/Configuracion';
 import RolesPermisos from './pages/RolesPermisos';
+import Usuarios from './pages/Usuarios';
 import ClientePortal from './pages/ClientePortal';
 import LandingPage from './pages/LandingPage';
 
@@ -54,6 +55,7 @@ function App() {
               <Route path="clientes" element={<Clientes />} />
               <Route path="servicios" element={<Servicios />} />
               <Route path="paquetes" element={<Paquetes />} />
+              <Route path="usuarios" element={<Usuarios />} />
               <Route path="configuracion" element={<Configuracion />} />
               <Route path="roles-permisos" element={<RolesPermisos />} />
               

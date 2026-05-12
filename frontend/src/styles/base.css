@@ -4,31 +4,24 @@
   padding: 0;
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
 body {
   font-family: var(--font-family);
   background-color: var(--color-bg-base);
   color: var(--color-text-main);
-  line-height: 1.5;
-  /* Premium radial gradient background for depth */
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.1), transparent 25%),
-    radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.1), transparent 25%);
+  line-height: 1.6;
+  background-image:
+    radial-gradient(ellipse at 10% 20%, rgba(5, 150, 105, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, #f8fafc 0%, transparent 100%);
   background-attachment: fixed;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button {
-  font-family: inherit;
-  cursor: pointer;
-  border: none;
-  background: none;
-}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
 
 /* Glass panel global utility */
 .glass-panel {
@@ -40,44 +33,23 @@ button {
   box-shadow: var(--glass-shadow);
 }
 
-/* Modern Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(100, 116, 139, 0.2);
   border-radius: 10px;
-  transition: background 0.3s ease;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(100, 116, 139, 0.4);
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Hide scrollbar for IE, Edge and Firefox */
-.no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-
-/* Specific to Sidebar - modern approach: internal scrolling without visible bar */
 .sidebar {
   overflow-y: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-
-.sidebar::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
-}
+.sidebar::-webkit-scrollbar { display: none; }
